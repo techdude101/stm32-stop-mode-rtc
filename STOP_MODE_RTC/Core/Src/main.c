@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SLEEP_TIME		10U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,6 +47,8 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
+uint8_t alarm_flag = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +58,10 @@ static void MX_RTC_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
+void setAlarm(void);
+void resetTime(void);
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc);   //This routine is called when alarm interrupt occurs
+void enterStopMode(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,10 +100,16 @@ int main(void)
   MX_RTC_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  resetTime();
+  setAlarm();
+//  uint8_t msg[] = "Startup...\r\n";
+//  HAL_UART_Transmit(&huart1, msg, sizeof(msg), 1000);
 
-  uint8_t msg[] = "Startup...\r\n";
-  HAL_UART_Transmit(&huart1, msg, sizeof(msg), 1000);
+  LED_ON();
+  HAL_Delay(1000);
+  LED_OFF();
 
+  enterStopMode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,10 +119,15 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  LED_ON();
-//	  HAL_Delay(1000);
-//	  LED_OFF();
-//	  HAL_Delay(1000);
+	RTC_TimeTypeDef sTime;
+    HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN); //To see the timing for debug
+    if (alarm_flag)
+    {
+        alarm_flag = 0;
+        resetTime();
+        setAlarm();
+        enterStopMode();
+    }
   }
   /* USER CODE END 3 */
 }
@@ -182,7 +199,6 @@ static void MX_RTC_Init(void)
   /** Initialize RTC Only
   */
   hrtc.Instance = RTC;
-  hrtc.Instance->CRH |= RTC_IT_SEC; // Enable interrupt every second
   hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
   hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
@@ -214,7 +230,7 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RTC_Init 2 */
-
+//  hrtc.Instance->CRH |= RTC_IT_ALRA;
   /* USER CODE END RTC_Init 2 */
 
 }
@@ -280,6 +296,44 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
+{
+    alarm_flag = 1;
+}
+void enterStopMode(void)
+{
+    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+ 	HAL_PWR_EnterSTANDBYMode();
+}
+
+void setAlarm(void)
+{
+    RTC_AlarmTypeDef sAlarm;
+
+    sAlarm.AlarmTime.Hours = 0U;
+    sAlarm.AlarmTime.Minutes = 0U;
+    sAlarm.AlarmTime.Seconds = SLEEP_TIME;
+    sAlarm.Alarm = RTC_ALARM_A;
+
+    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+    {
+	   Error_Handler();
+    }
+}
+
+void resetTime(void)
+{
+    RTC_TimeTypeDef sTime;
+
+    sTime.Hours = 0U;
+    sTime.Minutes = 0U;
+    sTime.Seconds = 0U;
+
+    if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
 /* USER CODE END 4 */
 
 /**

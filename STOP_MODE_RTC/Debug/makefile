@@ -69,8 +69,8 @@ all: main-build
 main-build: STOP_MODE_RTC.elf secondary-outputs
 
 # Tool invocations
-STOP_MODE_RTC.elf: $(OBJS) $(USER_OBJS) C:\Users\Tech\STM32CubeIDE\workspace_1.5.0_2\STOP_MODE_RTC\STM32F103C8TX_FLASH.ld
-	arm-none-eabi-g++ -o "STOP_MODE_RTC.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\Tech\STM32CubeIDE\workspace_1.5.0_2\STOP_MODE_RTC\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STOP_MODE_RTC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+STOP_MODE_RTC.elf: $(OBJS) $(USER_OBJS) C:\code\STM32\Examples\ and\ Demos\stm32-stop-mode-rtc\STOP_MODE_RTC\STM32F103C8TX_FLASH.ld
+	arm-none-eabi-g++ -o "STOP_MODE_RTC.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\code\STM32\Examples and Demos\stm32-stop-mode-rtc\STOP_MODE_RTC\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STOP_MODE_RTC.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
