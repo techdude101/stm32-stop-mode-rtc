@@ -230,7 +230,7 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN RTC_Init 2 */
-//  hrtc.Instance->CRH |= RTC_IT_ALRA;
+
   /* USER CODE END RTC_Init 2 */
 
 }
